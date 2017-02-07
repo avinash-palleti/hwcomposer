@@ -30,7 +30,6 @@ LOCAL_SHARED_LIBRARIES := \
 
 
 LOCAL_C_INCLUDES := \
-        vendor/intel/external/android_ia/drm_gralloc \
 	vendor/intel/external/android_ia/libdrm \
 	vendor/intel/external/android_ia/libdrm/include/drm \
 	system/core/include/utils \
@@ -96,8 +95,19 @@ LOCAL_SRC_FILES += \
 	common/compositor/gl/shim.cpp
 endif
 
+ifeq ($(strip $(BOARD_USES_MINIGBM)),true)
+LOCAL_CPPFLAGS += -DUSE_MINIGBM
+LOCAL_C_INCLUDES += \
+	vendor/intel/external/android_ia/minigbm/cros_gralloc
+else
+LOCAL_C_INCLUDES += \
+	vendor/intel/external/android_ia/drm_gralloc
+endif
+
 LOCAL_MODULE := hwcomposer.android_ia
 LOCAL_MODULE_TAGS := optional
+#Preffered paths for all vendor hals /vendor/lib/hw
+LOCAL_PROPRIETARY_MODULE := true
 LOCAL_MODULE_RELATIVE_PATH := hw
 LOCAL_MODULE_CLASS := SHARED_LIBRARIES
 LOCAL_MODULE_SUFFIX := $(TARGET_SHLIB_SUFFIX)

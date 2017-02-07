@@ -21,12 +21,13 @@ AM_MAKEFLAGS = -s
 
 SUBDIRS = \
 	. \
+	tests/third_party/json-c \
 	tests
 
 MAINTAINERCLEANFILES = ChangeLog INSTALL
 
 AM_CPP_INCLUDES = -I$(top_srcdir) -Ipublic -Icommon/core -Icommon/utils -Icommon/compositor -Icommon/display  -Ios/linux -Icommon/compositor/gl -Itests/common
-AM_CPPFLAGS = -std=c++11 -DUSE_GL -DUDEV_SUPPORT
+AM_CPPFLAGS = -std=c++11 -DUSE_GL -DUDEV_SUPPORT -DUSE_MINIGBM
 AM_CPPFLAGS += $(AM_CPP_INCLUDES) $(CWARNFLAGS) $(DRM_CFLAGS) $(DEBUG_CFLAGS)
 AM_CFLAGS = $(CWARNFLAGS) $(DRM_CFLAGS) $(DEBUG_CFLAGS)
 

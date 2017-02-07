@@ -65,8 +65,8 @@ struct POI {
 
 // This function will take active region and right x
 // For an active region there will be set of YPOI
-// It will traverse through each y_poi and given out rectangle
-// with rect_ids active at that time.
+// It will traverse through each y_poi and given out
+// rectangle with rect_ids active at that time.
 void GenerateOutLayers(Region *reg, uint64_t x,
                        std::vector<RectSet<int>> *out) {
   Rect<int> out_rect;
@@ -127,12 +127,12 @@ void get_draw_regions(const std::vector<Rect<int>> &in,
     return;
   }
 
-  // set of all point of interests from input rectangles
+  // Set of all point of interests from input rectangles.
   std::set<POI> pois;
   std::list<Region *> imp_reg;
   std::list<Region> active_regions;
 
-  // This loop will add all point of interests into pois
+  // This loop will add all point of interests into pois.
   for (uint64_t i = 0; i < in.size(); i++) {
     const Rect<int> &rect = in[i];
 
@@ -156,10 +156,10 @@ void get_draw_regions(const std::vector<Rect<int>> &in,
   for (std::set<POI>::iterator it = pois.begin(); it != pois.end(); ++it) {
     const POI &poi = *it;
     // First rectangle has to be inserted into active region
-    // This condition will be true if existing all active regions are already
-    // copied to out.
-    // If current poi is of type END there are no active regions, then this poi
-    // might already covered in previous pass
+    // This condition will be true if existing all active
+    // regions are already copied to out.
+    // If current poi is of type END there are no active regions,
+    // then this poi might already covered in previous pass
     if (active_regions.size() == 0 && poi.type == START) {
       Region reg;
       reg.sx = poi.x;
@@ -181,14 +181,15 @@ void get_draw_regions(const std::vector<Rect<int>> &in,
       continue;
     }
 
-    // If active_regions in not empty,
-    // Check if current poi y points fall in range of any existing
-    // active_regions
+    // If active_regions in not empty, Check if current
+    // poi y points fall in range of any existing
+    // active_regions.
     // If yes, get that active region and do further processing
     // If No, create a new region and insert into active regions
     // If it is start event then there is possibility that multiple
-    // active_regions get impacted
-    // If it is end event then one or none active_regions will get impacted
+    // active_regions get impacted.
+    // If it is end event then one or none active_regions will get
+    // impacted.
     bool found = false;
     imp_reg.clear();
     std::list<Region>::iterator it_reg = active_regions.begin();
@@ -204,17 +205,16 @@ void get_draw_regions(const std::vector<Rect<int>> &in,
         continue;
       } else {
         found = true;
-        // found atleast one affected active region
-        // if it is start event, add rect_id to cur_reg.rect_ids and also top_y
-        // and bot_y to cur_reg.y_points
-        // if it is end event, remove rect_id from cur_reg.rect_ids and also
-        // top_y and bot_y from cur_reg.y_points
-        // if it is end event, check cur_reg.rect_ids is non empty, it is empty
-        // remove region from active_regions
-        // if it is end event, check next poi.x if it is same and those y
-        // coordinates fall in this region, if yes 1) remove that rect_id and y
-        // coordinates as well
-        // 2)contine to check next poi.x until you find mismatch x
+        // Found atleast one affected active region. If it is start event,
+        // add rect_id to cur_reg.rect_ids, also top_y and bot_y to
+        // cur_reg.y_points. if it is end event, remove rect_id from
+        // cur_reg.rect_ids and also top_y and bot_y from cur_reg.y_points.
+        // Also, if it is end event, check cur_reg.rect_ids is non empty,
+        // if it is empty remove region from active_regions.
+        // If it is end event, check next poi.x and see if it is same and
+        // those y coordinates fall in this region, if yes 1) remove
+        // that rect_id and y coordinates as well
+        // 2)contine to check next poi.x until you find mismatch x.
         if (poi.x == cur_reg.sx) {
           if (poi.type == START) {
             cur_reg.rect_ids.add(poi.rect_id);
@@ -259,7 +259,7 @@ void get_draw_regions(const std::vector<Rect<int>> &in,
         }
       }
     }
-    // if no affected active region found, add new active region
+    // If no affected active region found, add new active region
     if (!found && poi.type == START) {
       Region reg;
       reg.sx = poi.x;
@@ -303,7 +303,7 @@ void get_draw_regions(const std::vector<Rect<int>> &in,
           std::list<Region *>::iterator next_imp_reg_it = cur_imp_reg_it;
           next_imp_reg_it++;
           if (next_imp_reg_it == imp_reg.end()) {
-            // if there is an another
+            // If there is an another
             // region which is impacted, no
             // need to add anything.
             // if there is no other active region left,

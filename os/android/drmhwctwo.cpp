@@ -398,8 +398,11 @@ HWC2::Error DrmHwcTwo::HwcDisplay::PresentDisplay(int32_t *retire_fence) {
         continue;
     }
   }
-  if (use_client_layer && client_layer_.GetLayer()->GetNativeHandle()->handle_)
+  if (use_client_layer && client_layer_.GetLayer() &&
+      client_layer_.GetLayer()->GetNativeHandle() &&
+      client_layer_.GetLayer()->GetNativeHandle()->handle_) {
     z_map.emplace(std::make_pair(client_z_order, &client_layer_));
+  }
 
   std::vector<hwcomposer::HwcLayer *> layers;
   // now that they're ordered by z, add them to the composition
@@ -472,7 +475,7 @@ HWC2::Error DrmHwcTwo::HwcDisplay::SetOutputBuffer(buffer_handle_t buffer,
     ALOGE("SetOutputBuffer called \n");
 
   struct gralloc_handle *temp = new struct gralloc_handle();
-  temp->handle_ = temp->buffer_->handle;
+  temp->handle_ = buffer;
   display_->SetOutputBuffer(temp, release_fence);
   return HWC2::Error::None;
 }

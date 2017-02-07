@@ -1,0 +1,137 @@
+--- common/utils/disjoint_layers.cpp
++++ common/utils/disjoint_layers.cpp
+@@ -63,10 +63,10 @@
+   }
+ };
+ 
+-//This function will take active region and right x
+-//For an active region there will be set of YPOI
+-//It will traverse through each y_poi and given out rectangle
+-//with rect_ids active at that time.
++// This function will take active region and right x
++// For an active region there will be set of YPOI
++// It will traverse through each y_poi and given out rectangle
++// with rect_ids active at that time.
+ template <typename TNum>
+ void GenerateOutLayers(Region *reg, uint64_t x,
+                        std::vector<RectSet<TNum>> *out) {
+@@ -83,34 +83,32 @@
+       rect_ids.add(y_poi.rect_id);  // No need to check for start or end event
+                                     // as rect_ids is empty
+     } else {
+-				if(out_rect.top == y_poi.y)
+-				{
+-					 if (y_poi.type == START)
+-        		rect_ids.add(y_poi.rect_id);
+-		      else
+-    		    rect_ids.subtract(y_poi.rect_id);
+-					continue;
+-
+-				}
+-      	out_rect.bottom = y_poi.y;
+-      	out->emplace_back(RectSet<TNum>(rect_ids, out_rect));
+-	      out_rect.top = y_poi.y;
+-  	    if (y_poi.type == START)
+-    	    rect_ids.add(y_poi.rect_id);
+-      	else
+-        	rect_ids.subtract(y_poi.rect_id);
+-    	}
+-  }
+-}
+-//This function will remove y coordinates corresponding to given rect_id
++      if (out_rect.top == y_poi.y) {
++        if (y_poi.type == START)
++          rect_ids.add(y_poi.rect_id);
++        else
++          rect_ids.subtract(y_poi.rect_id);
++        continue;
++      }
++      out_rect.bottom = y_poi.y;
++      out->emplace_back(RectSet<TNum>(rect_ids, out_rect));
++      out_rect.top = y_poi.y;
++      if (y_poi.type == START)
++        rect_ids.add(y_poi.rect_id);
++      else
++        rect_ids.subtract(y_poi.rect_id);
++    }
++  }
++}
++// This function will remove y coordinates corresponding to given rect_id
+ void RemoveYpois(Region *reg, uint64_t rect_id) {
+   std::set<YPOI>::iterator top_it = reg->y_points.begin();
+-	while (top_it != reg->y_points.end()) {
+-			if((*top_it).rect_id == rect_id)
+-					reg->y_points.erase(top_it++);
+-			else
+-					top_it++;
+-	}
++  while (top_it != reg->y_points.end()) {
++    if ((*top_it).rect_id == rect_id)
++      reg->y_points.erase(top_it++);
++    else
++      top_it++;
++  }
+ }
+ 
+ bool compare_region(const Region *first, const Region *second) {
+@@ -120,7 +118,7 @@
+ }
+ template <typename TNum>
+ void disjoint_layers(const std::vector<Rect<TNum>> &in,
+-                    std::vector<RectSet<TNum>> *out) {
++                     std::vector<RectSet<TNum>> *out) {
+   if (in.size() > RectIDs::max_elements) {
+     return;
+   }
+@@ -329,7 +327,7 @@
+ }
+ 
+ void disjoint_layers_64(const std::vector<Rect<int>> &in,
+-                       std::vector<RectSet<int>> *out) {
++                        std::vector<RectSet<int>> *out) {
+   disjoint_layers(in, out);
+ }
+ 
+--- common/compositor/compositor.cpp	(before formatting)
++++ common/compositor/compositor.cpp	(after formatting)
+@@ -18,15 +18,15 @@
+ 
+ #include <xf86drmMode.h>
+ 
++#include "disjoint_layers.h"
+ #include "displayplanestate.h"
+ #include "hwctrace.h"
+ #include "nativegpuresource.h"
+ #include "nativesurface.h"
+ #include "nativesync.h"
++#include "overlaylayer.h"
++#include "renderer.h"
+ #include "renderstate.h"
+-#include "renderer.h"
+-#include "overlaylayer.h"
+-#include "disjoint_layers.h"
+ #include "scopedrendererstate.h"
+ 
+ namespace hwcomposer {
+@@ -282,8 +282,8 @@
+       [=](size_t layer_index) { return display_frame[layer_index]; });
+   std::transform(source_layers.begin(), source_layers.end(),
+                  layer_rects.begin() + layer_offset, [=](size_t layer_index) {
+-    return display_frame[layer_index];
+-  });
++                   return display_frame[layer_index];
++                 });
+ 
+   std::vector<RectSet<int>> separate_regions;
+   disjoint_layers_64(layer_rects, &separate_regions);
+--- public/disjoint_layers.h	(before formatting)
++++ public/disjoint_layers.h	(after formatting)
+@@ -141,7 +141,7 @@
+ };
+ 
+ void disjoint_layers_64(const std::vector<Rect<int>> &in,
+-                       std::vector<RectSet<int>> *out);
++                        std::vector<RectSet<int>> *out);
+ }
+ 
+ #endif
