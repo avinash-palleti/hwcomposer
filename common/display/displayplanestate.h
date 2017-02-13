@@ -17,8 +17,9 @@
 #define DISPLAY_PLANE_STATE_H_
 
 #include <stdint.h>
-
 #include <vector>
+#include "hwctrace.h"
+#include "overlaylayer.h"
 
 namespace hwcomposer {
 
@@ -38,13 +39,29 @@ class DisplayPlaneState {
   DisplayPlaneState(DisplayPlane *plane, OverlayLayer *layer, uint32_t index)
       : plane_(plane), layer_(layer) {
     source_layers_.emplace_back(index);
+    uint32_t width = layer->GetDisplayFrameWidth();
+    uint32_t height = layer->GetDisplayFrameHeight();
+    max_width_ = max_width_ > width ? max_width_ : width;
+    max_height_ = max_height_ > height ? max_height_ : height;
   }
 
   State GetCompositionState() const {
     return state_;
   }
 
-  void AddLayer(size_t index) {
+  uint32_t GetMaxWidth() const {
+    return max_width_;
+  }
+
+  uint32_t GetMaxHeight() const {
+    return max_height_;
+  }
+
+  void AddLayer(size_t index, uint32_t width, uint32_t height) {
+    WTRACE("Layer is being added to width = %d, height = %d, maxWidth = %d",
+           width, height, max_width_);
+    max_width_ = max_width_ > width ? max_width_ : width;
+    max_height_ = max_height_ > height ? max_height_ : height;
     source_layers_.emplace_back(index);
     state_ = State::kRender;
   }
@@ -73,6 +90,7 @@ class DisplayPlaneState {
   State state_ = State::kScanout;
   DisplayPlane *plane_ = NULL;
   OverlayLayer *layer_ = NULL;
+  uint32_t max_width_ = 0, max_height_ = 0;
   std::vector<size_t> source_layers_;
 };
 

@@ -139,7 +139,6 @@ std::tuple<bool, DisplayPlaneStateList> DisplayPlaneManager::ValidateLayers(
   composition.emplace_back(current_plane, primary_layer,
                            primary_layer->GetIndex());
   ++layer_begin;
-
   // Lets ensure we fall back to GPU composition in case
   // primary layer cannot be scanned out directly.
   if ((pending_modeset && layers.size() > 1) ||
@@ -151,7 +150,8 @@ std::tuple<bool, DisplayPlaneStateList> DisplayPlaneManager::ValidateLayers(
     last_plane.ForceGPURendering();
 
     for (auto i = layer_begin; i != layer_end; ++i) {
-      last_plane.AddLayer(i->GetIndex());
+      last_plane.AddLayer(i->GetIndex(), i->GetDisplayFrameWidth(),
+                          i->GetDisplayFrameHeight());
     }
     // We need to composite primary using GPU, lets use this for
     // all layers in this case.
@@ -189,7 +189,8 @@ std::tuple<bool, DisplayPlaneStateList> DisplayPlaneManager::ValidateLayers(
           composition.emplace_back(j->get(), layer, index);
           break;
         } else {
-          last_plane.AddLayer(index);
+          last_plane.AddLayer(index, i->GetDisplayFrameWidth(),
+                              i->GetDisplayFrameHeight());
           commit_planes.pop_back();
         }
       }
@@ -202,7 +203,8 @@ std::tuple<bool, DisplayPlaneStateList> DisplayPlaneManager::ValidateLayers(
     // We dont have any additional planes. Pre composite remaining layers
     // to the last overlay plane.
     for (auto i = layer_begin; i != layer_end; ++i) {
-      last_plane.AddLayer(i->GetIndex());
+      last_plane.AddLayer(i->GetIndex(), i->GetDisplayFrameWidth(),
+                          i->GetDisplayFrameHeight());
     }
 
     if (last_plane.GetCompositionState() == DisplayPlaneState::State::kRender)
@@ -233,7 +235,9 @@ std::tuple<bool, DisplayPlaneStateList> DisplayPlaneManager::ValidateLayers(
     } else {
       DisplayPlaneState &last_plane = composition.back();
       render_layers = true;
-      last_plane.AddLayer(cursor_layer->GetIndex());
+      last_plane.AddLayer(cursor_layer->GetIndex(),
+                          cursor_layer->GetDisplayFrameWidth(),
+                          cursor_layer->GetDisplayFrameHeight());
     }
   }
 
