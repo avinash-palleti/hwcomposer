@@ -53,10 +53,12 @@ class Compositor {
 
  private:
   bool PrepareForComposition();
-  void AddOutputLayer(std::vector<OverlayLayer> &layers,
-                       NativeSurface *surface);
+  void AddOutputLayer(std::vector<OverlayLayer> &layers, NativeSurface *surface,
+                      uint32_t left, uint32_t top, uint32_t right,
+                      uint32_t bottom);
   void Render(std::vector<OverlayLayer> &layers, NativeSurface *surface,
-              const std::vector<CompositionRegion> &comp_regions);
+              const std::vector<CompositionRegion> &comp_regions, uint32_t left,
+              uint32_t top, uint32_t right, uint32_t bottom);
   void SeparateLayers(const std::vector<size_t> &dedicated_layers,
                       const std::vector<size_t> &source_layers,
                       const std::vector<HwcRect<int>> &display_frame,

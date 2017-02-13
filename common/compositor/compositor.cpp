@@ -114,7 +114,8 @@ bool Compositor::Draw(DisplayPlaneStateList &comp_planes,
         continue;
 
       in_flight_surfaces_.back()->CreateFrameBuffer(plane, gpu_fd_);
-      Render(layers, in_flight_surfaces_.back(), comp_regions);
+      Render(layers, in_flight_surfaces_.back(), comp_regions, plane.GetLeft(),
+             plane.GetTop(), plane.GetRight(), plane.GetBottom());
       plane.SetOverlayLayer(&layers.back());
     }
   }
@@ -155,7 +156,7 @@ bool Compositor::DrawOffscreen(std::vector<OverlayLayer> &layers,
   std::unique_ptr<NativeSurface> surface(CreateBackBuffer(width_, height_));
   surface->InitializeForOffScreenRendering(buffer_handler_, output_handle);
 
-  Render(layers, surface.get(), comp_regions);
+  Render(layers, surface.get(), comp_regions, 0, 0, width_, height_);
 
   *retire_fence = layers.back().GetAcquireFence();
 
@@ -200,16 +201,15 @@ bool Compositor::PrepareForComposition() {
 }
 
 void Compositor::AddOutputLayer(std::vector<OverlayLayer> &layers,
-                                 NativeSurface *surface) {
+                                NativeSurface *surface, uint32_t left,
+                                uint32_t top, uint32_t right, uint32_t bottom) {
   layers.emplace_back();
   OverlayLayer &pre_comp_layer = layers.back();
   pre_comp_layer.SetNativeHandle(surface->GetNativeHandle());
   pre_comp_layer.SetBlending(HWCBlending::kBlendingPremult);
   pre_comp_layer.SetTransform(0);
-  pre_comp_layer.SetSourceCrop(
-      HwcRect<float>(0, 0, surface->GetWidth(), surface->GetHeight()));
-  pre_comp_layer.SetDisplayFrame(
-      HwcRect<int>(0, 0, surface->GetWidth(), surface->GetHeight()));
+  pre_comp_layer.SetSourceCrop(HwcRect<float>(left, top, right, bottom));
+  pre_comp_layer.SetDisplayFrame(HwcRect<int>(left, top, right, bottom));
   pre_comp_layer.SetBuffer(surface->GetBuffer());
   pre_comp_layer.SetAcquireFence(surface->ReleaseNativeFence());
   pre_comp_layer.SetIndex(layers.size() - 1);
@@ -217,7 +217,9 @@ void Compositor::AddOutputLayer(std::vector<OverlayLayer> &layers,
 
 void Compositor::Render(std::vector<OverlayLayer> &layers,
                         NativeSurface *surface,
-                        const std::vector<CompositionRegion> &comp_regions) {
+                        const std::vector<CompositionRegion> &comp_regions,
+                        uint32_t left, uint32_t top, uint32_t right,
+                        uint32_t bottom) {
   std::vector<RenderState> states;
   size_t num_regions = comp_regions.size();
   states.reserve(num_regions);
@@ -236,7 +238,7 @@ void Compositor::Render(std::vector<OverlayLayer> &layers,
   }
 
   renderer_->Draw(states, surface);
-  AddOutputLayer(layers, surface);
+  AddOutputLayer(layers, surface, left, top, right, bottom);
 }
 
 // Below code is taken from drm_hwcomposer adopted to our needs.
